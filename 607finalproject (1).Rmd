@@ -1,0 +1,151 @@
+---
+title: "607 Final Project"
+author: "Weijian Cai, Qixing Li"
+date: "May 6, 2019"
+output: 
+  html_document:
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float:
+      collapsed: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning = FALSE,message = FALSE)
+```
+
+#Data
+
+##Data Source
+
+We obtained data from [Kaggle.com](https://www.kaggle.com/wsj/college-salaries) 
+
+
+```{r}
+# load packages and data
+library(tidyverse)
+library(plotly)
+library(stringr)
+library(magrittr)
+library(DT)
+```
+
+
+##Data Load
+
+We read data from the CSV file which was uploaded to Github.
+```{r}
+# salaries by degree
+url_deg <- "https://raw.githubusercontent.com/qixing810/CUNYSPS-DataScience/master/DS607/Project/final%20project/degrees-that-pay-back.csv"
+df_deg <- read_csv(url_deg,
+                   col_names = c("major", "start_med_slry", "mid_car_slry",
+                                 "percent_chng", "mid_car_10th", "mid_car_25th",
+                                 "mid_car_75th", "mid_car_90th"),  # rename the column names
+                   skip = 1)  # names specified, skip header
+
+# salaries by college type
+url_col <- "https://raw.githubusercontent.com/qixing810/CUNYSPS-DataScience/master/DS607/Project/final%20project/salaries-by-college-type.csv"
+df_col <- read_csv(url_col,
+                   col_names = c("school_name", "school_type", "start_med_slry",
+                                 "mid_car_slry", "mid_car_10th", "mid_car_25th",
+                                 "mid_car_75th", "mid_car_90th"),
+                   skip = 1)
+
+# salaries by region
+url_reg <- "https://raw.githubusercontent.com/qixing810/CUNYSPS-DataScience/master/DS607/Project/final%20project/salaries-by-region.csv"
+df_reg <- read_csv(url_reg,
+                   col_names = c("school_name", "region", "start_med_slry",
+                                 "mid_car_slry", "mid_car_10th", "mid_car_25th",
+                                 "mid_car_75th", "mid_car_90th"),
+                   skip = 1)
+```
+
+
+#Tidy and Wrangle
+
+##Data Structure
+First we looked at the structure of the dataset.
+```{r}
+str(df_deg)
+str(df_col)
+str(df_reg)
+```
+
+##Data Types
+We removed the $ in the numbers and changed the data types from character to numeric in each dataset.
+```{r}
+# salaries by degree
+df_deg$start_med_slry <- parse_number(df_deg$start_med_slry)
+df_deg$mid_car_slry <- parse_number(df_deg$mid_car_slry)
+df_deg$mid_car_10th <- parse_number(df_deg$mid_car_10th)
+df_deg$mid_car_25th <- parse_number(df_deg$mid_car_25th)
+df_deg$mid_car_75th <- parse_number(df_deg$mid_car_75th)
+df_deg$mid_car_90th <- parse_number(df_deg$mid_car_90th)
+datatable(df_deg)
+```
+
+
+```{r}
+# salaries by college type
+df_col$start_med_slry <- parse_number(df_col$start_med_slry)
+df_col$mid_car_slry <- parse_number(df_col$mid_car_slry)
+df_col$mid_car_10th <- parse_number(df_col$mid_car_10th)
+df_col$mid_car_25th <- parse_number(df_col$mid_car_25th)
+df_col$mid_car_75th <- parse_number(df_col$mid_car_75th)
+df_col$mid_car_90th <- parse_number(df_col$mid_car_90th)
+datatable(df_col)
+```
+
+```{r}
+# salaries by region
+df_reg$start_med_slry <- parse_number(df_reg$start_med_slry)
+df_reg$mid_car_slry <- parse_number(df_reg$mid_car_slry)
+df_reg$mid_car_10th <- parse_number(df_reg$mid_car_10th)
+df_reg$mid_car_25th <- parse_number(df_reg$mid_car_25th)
+df_reg$mid_car_75th <- parse_number(df_reg$mid_car_75th)
+df_reg$mid_car_90th <- parse_number(df_reg$mid_car_90th)
+datatable(df_reg)
+```
+
+##data transformation
+start salary vs mid career salaries distribution analysis
+```{r}
+start_vs_mid <- df_reg%>%
+                 select(start_med_slry, mid_car_slry)%>%
+                 gather(career, salary)%>%
+                 mutate(career =as_factor(career,fct_rev))
+head(start_vs_mid)
+```
+```{r}
+ggplot(start_vs_mid, aes(salary, fill=career))+
+  geom_histogram(position ="dodge")
+  
+```
+
+#need to change to numeric, find median of starting and mid salary
+```{r}
+start_mean<- start_vs_mid%>%
+             filter(career=="start_med_slry")%>%
+             median()
+```
+
+The distribution for starting median salary is definitely concentrated at the lower range of salaries and is right-skewed. Graduates of most schools start out with median of $45,000. Towards mid-career, the distribution of median salaries becomes more dispersed and the median increases to $80,000.
+
+##scatter plot
+correlation between starting and mid-career salaries?
+```{r}
+ggplot(df_reg, aes(start_med_slry,mid_car_slry))+
+  geom_point()+
+  geom_smooth()
+```
+
+There is a strong positive correlaton between the starting salaries and the mid-career salaries.
+
+##salary by region
+##salary by college
+##salary by majores
+   starting median salary by major
+   starting and mid career median salary by major
+
+   
